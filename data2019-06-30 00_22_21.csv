@@ -1,0 +1,34 @@
+tag_name,description,time_stamp,value,quality
+ACEP-WS-DWINBOX.{Diagnostics}.Views.APICallCount/min,,2019-06-30 00:21:00,56,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.TotalConnections/min,,2019-06-30 00:21:00,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.TotalTVQs/min,,2019-06-30 00:21:00,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Reading.LiveRequests/sec,,2019-06-30 00:21:44,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Reading.LiveTVQs/sec,,2019-06-30 00:21:44,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Writing.NumClients,,2019-06-30 00:21:45,2,192
+ACEP-WS-DWINBOX.{Diagnostics}.Reading.HistoryMax-ms,,2019-06-30 00:21:45,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Writing.TagHandles,,2019-06-30 00:21:45,34,192
+ACEP-WS-DWINBOX.{Diagnostics}.Reading.TVQs/sec,,2019-06-30 00:21:45,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Writing.TVQ TimeExtensions/sec,,2019-06-30 00:21:47,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.Historian Thread Count,,2019-06-30 00:22:05,17,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.AxiomLivePixelMax-ms,,2019-06-30 00:22:20,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.AxiomCallCount,,2019-06-30 00:22:20,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.AxiomTotalTVQS,,2019-06-30 00:22:20,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.AxiomLiveCallCount,,2019-06-30 00:22:20,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.CPU Usage,,2019-06-30 00:22:20,2.8,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.AxiomLiveMax-ms,,2019-06-30 00:22:20,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.GetRawCount,,2019-06-30 00:22:20,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.GetRawMax-ms,,2019-06-30 00:22:20,0,192
+ACEP-WS-DWINBOX.{Diagnostics}.Views.Working Set Memory,,2019-06-30 00:22:20,45588,192
+ACEP-WS-DWINBOX.{Diagnostics}.AdminRequests/sec,,2019-06-30 00:22:21,6.081668,192
+ACEP-WS-DWINBOX.{Diagnostics}.Writing.Requests/sec,,2019-06-30 00:22:21,1.448016,192
+ACEP-WS-DWINBOX.{Diagnostics}.Reading.HistoryRequests/sec,,2019-06-30 00:22:21,0.2896032,192
+ACEP-WS-DWINBOX.{Diagnostics}.Writing.TVQs/sec,,2019-06-30 00:22:21,12.16334,192
+ACEP-WS-DWINBOX.{Diagnostics}.Reading.NumClients,,2019-06-30 00:22:21,1,192
+ACEP-WS-DWINBOX.{Diagnostics}.Reading.TagHandles,,2019-06-30 00:22:21,854,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.CPU Usage Historian,,2019-06-30 00:22:21,0.6787331,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.CPU Usage Total,,2019-06-30 00:22:21,15.8371,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.Historian Handle Count,,2019-06-30 00:22:21,538,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.Historian Working Set (memory),,2019-06-30 00:22:21,27924,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.Memory Page,,2019-06-30 00:22:21,50.56538,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.Memory Physical,,2019-06-30 00:22:21,39.7705,192
+ACEP-WS-DWINBOX.{Diagnostics}.Sys.Memory Virtual,,2019-06-30 00:22:21,60.44777,192
