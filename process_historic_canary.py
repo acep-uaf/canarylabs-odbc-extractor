@@ -43,7 +43,15 @@ def writeDictionary(dayDict,fileTag):
             if r != 'headers':
                 csv_writer.writerow(dayDict[r])
            
-
+def writeRecords(records,fileTag):
+    newcsvName = fileTag + 'rawData.csv'
+    header = ['tag_name','description','time_stamp','value','quality']
+    with open(csvName, mode='w',newline='') as Mycsv:
+    csv_writer = csv.writer(Mycsv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    csv_writer.writerow(header)
+    for row in records:
+        csv_writer.writerow(row)
+                
 #The historian requires filters
 #for instance 'select * from data' results in fewer records that 'select * from data where time_stamp < 2019-01-01'
 #so we run through day by day
@@ -60,6 +68,7 @@ while d2 < dend:
         #data as list of tuples
         records = cursor.execute("SELECT * from data WHERE time_stamp < '" + d2.strftime(dateformat) + "' and tag_name like 'ACEP-WS-DWINBOX.Cordova%'").fetchall()
         #tuples are organized as ('tag_name','description','time_stamp','value','quality')
+        writeRecords(records,(d2.strftime(dateformat)).split(' ')[0])
         dayDict = putInDictionary(records)
         if dayDict != None:
             writeDictionary(dayDict,(d2.strftime(dateformat)).split(' ')[0])
