@@ -38,7 +38,7 @@ lastfile.close()
 csvName = "data" + str(records[len(records)-1][2]).replace(":","_")+ ".csv"
 
 #write the file to the same directory the script is stored           
-with open(csvName, mode='w',newline='') as Mycsv:
+with open(csvName, mode='w+') as Mycsv:
     csv_writer = csv.writer(Mycsv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     csv_writer.writerow(['tag_name','description','datetime_stamp','value','quality'])
     for row in records:
