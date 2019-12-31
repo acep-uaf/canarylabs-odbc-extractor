@@ -8,7 +8,7 @@ import dropboxupdate
 '''script to read data out of canary labs historian and create a crosstab
 output as csv containing a single day of data for all parameters'''
 #CONSTANTS
-DATAFOLDER = 'D:\\RADIANCE\\canarylabs-odbc-extractor\\Cordova_SCADA_Data\\HistorianData2019'
+DATAFOLDER = 'D:\\RADIANCE\\Canary_Labs_Data_Management\\canarylabs-odbc-extractor\\Cordova_SCADA_Data\\HistorianData2019'
 DATEFORMAT = "%Y-%m-%d %H:%M:%S.%f"
 BYCHANNEL = os.path.join(DATAFOLDER,'ByChannel')
 
@@ -59,7 +59,7 @@ def zipByMonth(myDirectory):
 #for instance 'select * from data' returns only records from the most recent hour 
 #so we run through day by day
 dstart = datetime.datetime.strptime('2019-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
-dend = datetime.datetime.strptime('2019-12-31 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
+dend = datetime.datetime.strptime('2020-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
 
     
 #The connnection
@@ -123,7 +123,7 @@ def processData(d1,dend,tries = 0):
         cnxn.close()
 
 def main():
-    dropboxupdate.main()
+    #dropboxupdate.main()
     processData(dstart,dend)
     zipByMonth(BYCHANNEL)
 

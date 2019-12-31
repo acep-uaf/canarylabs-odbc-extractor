@@ -51,7 +51,7 @@ def processEntries(dbx,url,currentFiles, entries):
     os.chdir(DATAFOLDER)
     try:
         for fm in entries:
-            if fm.name not in currentFiles:
+            if (fm.name not in currentFiles): # can add  'and (fm.name.lower()[0:12] == 'cordova 2019')' if targetting a specific subfolder
                 dlink, response = dbx.sharing_get_shared_link_file(url, "/" + fm.name)
 
                 with open(fm.name, "wb") as f:
@@ -82,22 +82,19 @@ def download(dbx):
 
 def main():
     """download the contents of a given linked dropbox folder"""
-##    path = os.path.dirname(__file__)
-##    config = ConfigObject(os.path.join(path,'config.ini')) #read config file with access token
-##    dbx = dropbox.Dropbox(config['access_token'])
-##    #make sure we connected
-##    try:
-##        dbx.users_get_current_account()
-##    except AuthError:
-##        sys.exit("ERROR: Invalid access token; try re-generating an "
-##                 "access token from the app console on the web.")
-##    #download the contents
-##    print("updating data contents")
-##    download(dbx)
-    files = getFileList(DATAFOLDER)
-    print(len(files))
-    for f in files[0:4]:
-        print(f)
+    path = os.path.dirname(__file__)
+    config = ConfigObject(os.path.join(path,'config.ini')) #read config file with access token
+    dbx = dropbox.Dropbox(config['access_token'])
+    #make sure we connected
+    try:
+        dbx.users_get_current_account()
+    except AuthError:
+        sys.exit("ERROR: Invalid access token; try re-generating an "
+                 "access token from the app console on the web.")
+    #download the contents
+    print("updating data contents")
+    download(dbx)
+    
           
 
 if __name__ == '__main__':
