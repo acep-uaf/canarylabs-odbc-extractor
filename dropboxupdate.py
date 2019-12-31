@@ -10,7 +10,7 @@ import sys
 from dropbox.exceptions import AuthError
 
 DROPBOX_URL = "https://www.dropbox.com/scl/fo/pjgnsgq98aw1xoan22imd/AAAXO5qNZT9NZN4h7ILsOSp7a/Histlog?dl=0"
-DATAFOLDER = "D:\\Historian Data"
+DATAFOLDER = "D:\\RADIANCE"
 
 def ConfigObject(config_path):
     "read a configuration file to retrieve access token"
@@ -46,15 +46,11 @@ def processEntries(dbx,url,currentFiles, entries):
     try:
         for fm in entries:
             if fm.name not in currentFiles:
-                dlink = dbx.sharing_get_shared_link_file(url, "/" + fm.name)
-                fileurl = dlink[0].url.replace("dl=0", "dl=1")
-           
-                u = urllib.request.urlopen(fileurl)
-                data = u.read()
-                u.close()
+                dlink, response = dbx.sharing_get_shared_link_file(url, "/" + fm.name)
+
                 with open(fm.name, "wb") as f:
                     print("adding: ",fm.name)
-                    f.write(data)
+                    f.write(response.content)
     except:
         pass
     finally:
@@ -74,7 +70,7 @@ def download(dbx):
     processEntries(dbx, DROPBOX_URL, currentFiles, files.entries)
     while files.has_more:
         files = dbx.files_list_folder_continue(files.cursor)
-                processEntries(dbx, DROPBOX_URL, currentFiles, files.entries)
+        processEntries(dbx, DROPBOX_URL, currentFiles, files.entries)
 
 
 def main():
@@ -94,5 +90,4 @@ def main():
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    main()
