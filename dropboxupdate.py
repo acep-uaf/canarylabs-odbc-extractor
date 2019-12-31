@@ -10,7 +10,7 @@ import sys
 from dropbox.exceptions import AuthError
 
 DROPBOX_URL = "https://www.dropbox.com/scl/fo/pjgnsgq98aw1xoan22imd/AAAXO5qNZT9NZN4h7ILsOSp7a/Histlog?dl=0"
-DATAFOLDER = "D:\\RADIANCE"
+DATAFOLDER = "D:\\Historian Data"
 
 def ConfigObject(config_path):
     "read a configuration file to retrieve access token"
@@ -24,12 +24,18 @@ def ConfigObject(config_path):
     return configDict
 
 
-def getFileList(folder):
+def getFileList(basefolder):
     "list the files we already have - won't overwrite these files"
+    files = []
     try:
-        return os.listdir(folder)
-    except:
-        return []
+        
+        for root, dirnames, filenames in os.walk(basefolder):
+            for filename in filenames:
+                files.append(filename)   
+    except Exception as e:
+        print(e)
+    finally:
+        return files
 #
 def processEntries(dbx,url,currentFiles, entries):
     """
@@ -51,7 +57,8 @@ def processEntries(dbx,url,currentFiles, entries):
                 with open(fm.name, "wb") as f:
                     print("adding: ",fm.name)
                     f.write(response.content)
-    except:
+    except Exception as e:
+        print(e)
         pass
     finally:
         os.chdir(originaldirectory)
@@ -75,19 +82,23 @@ def download(dbx):
 
 def main():
     """download the contents of a given linked dropbox folder"""
-    path = os.path.dirname(__file__)
-    config = ConfigObject(os.path.join(path,'config.ini')) #read config file with access token
-    dbx = dropbox.Dropbox(config['access_token'])
-    #make sure we connected
-    try:
-        dbx.users_get_current_account()
-    except AuthError:
-        sys.exit("ERROR: Invalid access token; try re-generating an "
-                 "access token from the app console on the web.")
-    #download the contents
-    print("updating data contents")
-    download(dbx)
-
+##    path = os.path.dirname(__file__)
+##    config = ConfigObject(os.path.join(path,'config.ini')) #read config file with access token
+##    dbx = dropbox.Dropbox(config['access_token'])
+##    #make sure we connected
+##    try:
+##        dbx.users_get_current_account()
+##    except AuthError:
+##        sys.exit("ERROR: Invalid access token; try re-generating an "
+##                 "access token from the app console on the web.")
+##    #download the contents
+##    print("updating data contents")
+##    download(dbx)
+    files = getFileList(DATAFOLDER)
+    print(len(files))
+    for f in files[0:4]:
+        print(f)
+          
 
 if __name__ == '__main__':
     main()
