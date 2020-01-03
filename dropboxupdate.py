@@ -82,6 +82,7 @@ def download(dbx):
 
 def main():
     """download the contents of a given linked dropbox folder"""
+    #path = "C:\\Users\\tcmorgan2\\CanaryLabsDataManagement" #ALTER as need for accessing user config file
     path = os.path.dirname(__file__)
     config = ConfigObject(os.path.join(path,'config.ini')) #read config file with access token
     dbx = dropbox.Dropbox(config['access_token'])
