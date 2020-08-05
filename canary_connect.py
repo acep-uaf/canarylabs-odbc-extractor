@@ -1,7 +1,7 @@
 import pyodbc
 import csv
 '''This script reads rows of data from a Canary Labs Historian Database and writes the raw data to a
-csv file in the same format it is found in the database. I can be used to test a connection to a
+csv file in the same format it is found in the database. It can be used to test a connection to a
 database and extract simple data.
 In addition to this script a text file named lastRecord.txt is required.
 '''

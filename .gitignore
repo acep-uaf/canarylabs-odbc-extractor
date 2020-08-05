@@ -1,0 +1,10 @@
+*.pyc
+*.pyo
+*.DS_Store
+*__MACOSX*
+.idea/
+LICENCE
+ScheduledTasksLog.py
+HistoricData2018/
+
+

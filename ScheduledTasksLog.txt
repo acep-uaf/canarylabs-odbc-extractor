@@ -1,0 +1,257 @@
+
+RunStart2020-05-06 000242
+RunComplete2020-05-06 000258
+RunStart2020-05-06 082839
+RunStart2020-05-07 000249
+RunComplete2020-05-07 015254
+RunStart2020-05-07 085147
+RunStart2020-05-07 085523
+RunStart2020-05-07 085757
+RunStart2020-05-07 090111
+RunStart2020-05-07 090306
+RunStart2020-05-07 090507
+RunStart2020-05-07 090600
+RunStart2020-05-07 091454
+RunStart2020-05-07 091702
+RunStart2020-05-07 092016
+RunStart2020-05-07 092532
+RunStart2020-05-07 092819
+Dropbox files transferred:downloaded
+zipFiles uploaded:uploaded
+zipFiles uploaded:failedUploads
+RunComplete2020-05-07 101048
+RunStart2020-05-07 152321
+RunStart2020-05-08 000243
+[WinError 267] The directory name is invalid: '2020-04-03.zip'
+RunComplete2020-05-08 063951
+RunStart2020-05-08 071134
+RunStart2020-05-09 000242
+[WinError 267] The directory name is invalid: '2020-04-01.zip'
+RunComplete2020-05-09 161246
+RunStart2020-05-10 000242
+Dropbox files transferred:downloaded
+zipFiles uploaded:uploaded
+zipFiles uploaded:failedUploads
+RunComplete2020-05-10 073405
+RunStart2020-05-11 000242
+Dropbox files transferred:downloaded
+zipFiles uploaded:uploaded
+zipFiles uploaded:failedUploads
+RunComplete2020-05-11 114118
+RunStart2020-05-12 000242
+[WinError 267] The directory name is invalid: '2020-04-02.zip'
+RunComplete2020-05-12 064345
+RunStart2020-05-13 000242
+'dropbox'
+RunComplete2020-05-13 082837
+RunStart2020-05-14 000243
+[WinError 267] The directory name is invalid: '2020-04-08.zip'
+RunComplete2020-05-14 093924
+RunStart2020-05-15 000245
+Message: Not Found
+Status: 404
+Code: not_found
+Request ID: 7zrjcpget7zsloqm
+Headers: {'Date': 'Fri, 15 May 2020 08:35:15 GMT', 'Content-Type': 'application/json', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Strict-Transport-Security': 'max-age=31536000', 'Cache-Control': 'no-cache, no-store', 'Content-Encoding': 'gzip', 'BOX-REQUEST-ID': '05cdc28a08b889506a582536ace4f0f7c', 'X-Powered-By': 'PHP/7.3.15'}
+URL: https://api.box.com/2.0/folders/111885558694/items
+Method: GET
+Context Info: {'errors': [{'reason': 'invalid_parameter', 'name': 'folder', 'message': "Invalid value 'd_111885558694'. 'folder' with value 'd_111885558694' not found"}]}
+RunComplete2020-05-15 003544
+RunStart2020-05-15 091800
+RunStart2020-05-15 092331
+RunStart2020-05-15 092723
+RunStart2020-05-15 093346
+'str' object has no attribute 'object_id'
+RunComplete2020-05-15 102723
+RunStart2020-05-15 102734
+'str' object has no attribute 'object_id'
+RunComplete2020-05-15 110245
+RunStart2020-05-15 110337
+RunStart2020-05-15 113821
+[WinError 267] The directory name is invalid: '2020-04-03.zip'
+RunComplete2020-05-15 190933
+RunStart2020-05-16 000245
+[WinError 267] The directory name is invalid: '2020-04-06.zip'
+RunComplete2020-05-16 081259
+RunStart2020-05-16 113952
+RunStart2020-05-16 114846
+RunStart2020-05-17 000245
+'dropbox'
+RunComplete2020-05-17 040827
+[WinError 267] The directory name is invalid: '2020-04-16.zip'
+RunComplete2020-05-17 153955
+RunStart2020-05-18 000247
+[WinError 267] The directory name is invalid: '2020-04-07.zip'
+RunComplete2020-05-18 072244
+RunStart2020-05-19 000247
+[WinError 267] The directory name is invalid: '2020-05-12.zip'
+RunComplete2020-05-19 020126
+RunStart2020-05-20 000247
+'dropbox'
+RunComplete2020-05-20 000818
+RunStart2020-05-21 000246
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-21 001031
+RunStart2020-05-22 000246
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-22 001132
+RunStart2020-05-23 000247
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-23 001241
+RunStart2020-05-24 000247
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-24 001350
+RunStart2020-05-25 000246
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-25 001507
+RunStart2020-05-26 000247
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-26 001606
+RunStart2020-05-27 000249
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-27 000843
+RunStart2020-05-28 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-28 000810
+RunStart2020-05-29 000245
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-29 000838
+RunStart2020-05-30 000245
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-30 000901
+RunStart2020-05-31 000245
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-05-31 000924
+RunStart2020-06-01 000245
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-01 001002
+RunStart2020-06-02 000245
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-02 001010
+RunStart2020-06-03 000246
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-03 001032
+RunStart2020-06-04 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-04 001054
+RunStart2020-06-05 000241
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-05 001118
+RunStart2020-06-06 000241
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-06 001137
+RunStart2020-06-07 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-07 001203
+RunStart2020-06-08 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-08 001226
+RunStart2020-06-09 000241
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-09 001302
+RunStart2020-06-10 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-10 001318
+RunStart2020-06-11 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-11 001418
+RunStart2020-06-23 184403
+RunStart2020-06-23 184447
+Attempt to use a closed connection.
+RunComplete2020-06-23 185845
+Attempt to use a closed connection.
+RunComplete2020-06-23 185847
+RunStart2020-06-23 190546
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-23 190558
+RunStart2020-06-24 000242
+[WinError 267] The directory name is invalid: '2020-05-15.zip'
+RunComplete2020-06-24 025251
+RunStart2020-06-25 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-25 012940
+RunStart2020-06-26 000242
+('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+RunComplete2020-06-26 000301
+RunStart2020-06-27 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-27 013457
+RunStart2020-06-28 000242
+RunStart2020-06-29 000242
+Dropbox files transferred:0
+zipFiles uploaded:0
+zipFiles not uploaded:0
+RunComplete2020-06-29 013631
+RunStart2020-06-30 000241
+RunStart2020-07-01 000241
+RunStart2020-07-02 000241
+RunStart2020-07-03 000241
+RunStart2020-07-04 000241
+RunStart2020-07-05 000241
+RunStart2020-07-06 000241
+RunStart2020-07-07 000241
+RunStart2020-07-08 000241
+RunStart2020-07-09 000241
+RunStart2020-07-10 000241
+RunStart2020-07-11 000241
+RunStart2020-07-12 000241
+RunStart2020-07-13 000241
+('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+RunComplete2020-07-13 000300
+RunStart2020-07-14 000241
+RunStart2020-07-15 000241
+RunStart2020-07-16 000241
+RunStart2020-07-17 000241
+RunStart2020-07-18 000241
+RunStart2020-07-19 000241
+RunStart2020-07-20 000241
