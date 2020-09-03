@@ -5,6 +5,7 @@ import datetime
 from zipfile import ZipFile
 import dropboxupdate
 import uploadToBox
+from Canary2Timescale import Canary2Timescale, writeChannels
 
 '''script to read data out of canary labs historian and create a crosstab
 output as csv containing a single day of data for each parameters'''
@@ -12,6 +13,7 @@ output as csv containing a single day of data for each parameters'''
 DATAFOLDER = 'D:\\RADIANCE\\Canary_Labs_Data_Management\\canarylabs-odbc-extractor\\Cordova_SCADA_Data\\HistorianData2020'
 DATEFORMAT = "%Y-%m-%d %H:%M:%S.%f"
 BYCHANNEL = os.path.join(DATAFOLDER,'ByChannel')
+KEYCHANNELS = os.path.join(DATAFOLDER,'KeyChannels')
 LASTRECORDFile = 'D:\\RADIANCE\\Canary_Labs_Data_Management\\canarylabs-odbc-extractor\\lastRecord.txt'
 
 def writeRecords(records,filepath):
@@ -190,21 +192,31 @@ def makeSingleFile(directory, tag):
                         monthChannelList.append(tag + mon)
                         csv_writer.writerow(['tag_name','description','time_stamp','value','quality']) #write a header
                     [csv_writer.writerow(row) for row in csv_reader if row[0] != 'tag_name']
-
+def getDateTime(filename):
+    '''
+    Returns a date object extracted from the file name for hdb files. Assumes a naming convention of Cordova yyyymmdd hh.hdb
+    :param filename:
+    :return:
+    '''
+    strday = filename.split(" ")[1]
+    strhour = filename.split(" ")[2][0:2]
+    return datetime.datetime(int(strday[0:4]),int(strday[4:6]), int(strday[6:8]), int(strhour))
+def fileDateTime(listOfFiles):
+    return [getDateTime(d) for d in listOfFiles]
 #dstart = datetime.datetime.strptime('2019-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
 #dend = datetime.datetime.strptime('2020-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
+
+def readSpecialChannelNames():
+    return []
 def main():
 
     newFiles = dropboxupdate.getFiles() #test case removed Cordova 20200415 00 so one file should be processed
-    dstart = getLastRecord() #last record set to 2020-04-13 00:00:01.10000 #this should result on 2 zip folders
-    dend = datetime.datetime.today()
-    try:
-         lastProcessed = processData(dstart,dend)
-         writeLast(lastProcessed)
-    except ProcessingStoppedError as e:
-        raise ProcessingStoppedError(e.datetime,e.message) #this will cause exit due to error
-
+    Canary2Timescale(min(fileDateTime(newFiles)))
+    writeChannels(min(fileDateTime(newFiles)),datetime.datetime.now(),BYCHANNEL,None)
+    specialChannels = readSpecialChannelNames()
+    writeChannels(min(fileDateTime(newFiles)),datetime.datetime.now(),KEYCHANNELS,specialChannels)
     zipByDays(BYCHANNEL)
+    zipByDays(KEYCHANNELS)
     success, failed = uploadToBox.uploadZippedToBox(BYCHANNEL)
     for z in success:
         os.rmdir(z)
