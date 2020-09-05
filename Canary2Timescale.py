@@ -5,20 +5,22 @@ import os
 import psycopg2
 import datetime
 import pyodbc
+import pytz
 #CONSTANTS
-from process_historic_canary import writeRecords
+import process_historic_canary
 
 DATEFORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 class day:
     def __init__(self,d):
-        self.begin = datetime.datetime(d + '00:00:00.0001')
-        self.end =  datetime.datetime(d + '11:59:59.9999')
+        self.begin = datetime.datetime.combine(d, datetime.datetime.min.time())
+        self.end = datetime.datetime.combine(d, datetime.datetime.max.time())
+
 
 def readPGconfig():
     "read a configuration file to retrieve access token"
     configDict = {}
-    with open(os.path.join(['instance','dbconfig.cfg']), 'r') as config:
+    with open(os.path.join(*['instance','pgconfig.cfg']), 'r') as config:
         for line in config.readlines():
             try:
                 configDict[line.split("=")[0]] = line.split("=")[1].rstrip()
@@ -28,19 +30,27 @@ def readPGconfig():
 def connect2Canary():
     return pyodbc.connect('DSN=CanaryODBCClient;')
 def connect2Pg():
-    constring = "dbname = cordova_scada_data user=" + str(readPGconfig()['user']) +  "password=" + str(readPGconfig()['pswd'])
+    constring = "dbname = cordova_scada_data user=" + str(readPGconfig()['user']) +  " password=" + str(readPGconfig()['pwd'])
     return psycopg2.connect(constring)
 def readCanary(cnxn,start,stop,tag):
+    logFile = open(datetime.datetime.today().strftime("%Y-%m-%d") + 'log.txt', "w+")
     cursor = cnxn.cursor()
-    if tag is None:
-        records = cursor.execute(
-            "SELECT tag_name, description, time_stamp, value, quality from data WHERE time_stamp > '" + start.strftime(
-                DATEFORMAT) + "'AND time_stamp < '" + stop.strftime(DATEFORMAT) + "'").fetchall()
-    else:
-        records = cursor.execute(
-            "SELECT tag_name, description, time_stamp, value, quality from data WHERE time_stamp > '" + start.strftime(
+    try:
+        if tag is None:
+            records = cursor.execute(
+                "SELECT tag_name,time_stamp, value, quality from data WHERE time_stamp > '" + start.strftime(
+                    DATEFORMAT) + "'AND time_stamp < '" + stop.strftime(DATEFORMAT) + "'").fetchall()
+        else:
+            records = cursor.execute(
+                "SELECT tag_name, description, time_stamp, value, quality from data WHERE time_stamp > '" + start.strftime(
                 DATEFORMAT) + "'AND time_stamp < '" + stop.strftime(DATEFORMAT) + "' and tag_name = '" + tag[0] + "'").fetchall()
-    return records
+
+    except Exception as e:
+       records =[]
+       logFile.write("pyodbc error on {0} \n".format(stop.strftime(DATEFORMAT)))
+       logFile.write(str(e) + "\n")
+    finally:
+        return records
 
 def daterange(date1, date2):
     for n in range(int((date2 - date1).days) + 1):
@@ -48,9 +58,13 @@ def daterange(date1, date2):
 
 def getLastInsert(cnx):
     cursor = cnx.cursor()
-    last = cursor.execute("SELECT max(datetime) from data").fetchall()
+    cursor.execute("SET session time zone 'America/Anchorage'")
+    cursor.execute("SELECT max(datetime) from data")
+    last = cursor.fetchone()
     cursor.close()
-    return last
+    if last != (None,):
+        return last
+    return None
 def write2Pg(cnx,records):
     '''
 
@@ -59,14 +73,15 @@ def write2Pg(cnx,records):
     :return: None
     '''
     cursor = cnx.cursor()
-    cursor.executemany("INSERT INTO tmp(datetime,channel,value,quality) VALUES(%s,%s,%s,%s)",records)
+    cursor.execute("SET session time zone 'America/Anchorage'")
+    cursor.executemany("INSERT INTO data(channel,datetime,value,quality) VALUES(%s,%s,%s,%s) ON CONFLICT DO NOTHING",records)
     cnx.commit()
     # cursor.execute("""INSERT INTO data(datetime,channel,value,quality)
     # SELECT datetime, channel,value,quality FROM tmp WHERE datetime || channel NOT IN (SELECT datetime || channel FROM data)""")
-    cursor.execute("""INSERT INTO data(datetime,channel,value,quality) 
-        SELECT datetime, channel,value,quality FROM tmp ON CONFLICT DO NOTHING""")
-    cursor.execute("DELETE * FROM tmp")
-    cnx.commit()
+    #cursor.execute("""INSERT INTO data(datetime,channel,value,quality)
+    #    SELECT datetime, channel,value,quality FROM tmp ON CONFLICT DO NOTHING""")
+    #cursor.execute("DELETE FROM tmp")
+    #cnx.commit()
     cursor.close()
     return
 def getAllTags(start,stop):
@@ -101,7 +116,7 @@ def writeChannels(start, stop,path, tags):
         cnx.close()
 def matchChannels(ccnx,pcnx):
     cursor = ccnx.cursor()
-    tags = cursor.execute("SELECT * FROM tags WHERE tag_name like '%.Cordova.%'").fetchall()
+    tags = cursor.execute("SELECT tag_name,description FROM tags WHERE tag_name like '%.Cordova.%'").fetchall()
     cursor.close()
     updateChannels(tags, pcnx)
 
@@ -109,6 +124,7 @@ def matchChannels(ccnx,pcnx):
 def insertTag(tag,cursor):
 
     cursor.execute("INSERT INTO channel(name, description) VALUES (%s, %s) ON CONFLICT DO NOTHING",tag)
+    return
 def updateChannels(tags,cnx):
     '''
     adds new tags to the channel table for the provided connection
@@ -128,20 +144,27 @@ def Canary2Timescale(minFileDateTime):
     #connect to pg
     pgcnxn = connect2Pg()
     start = getLastInsert(pgcnxn) #start needs to be a datetime object
-    if start > minFileDateTime:
+    minFileDateTime = minFileDateTime.replace(tzinfo=pytz.timezone('US/Alaska'))
+    if ((start is None) or  (start[0] > minFileDateTime)):
         start = minFileDateTime
 
     stop = datetime.datetime.today()
 
     matchChannels(cnxn,pgcnxn)
     #read canary
-    for d in daterange(datetime.date(start),stop): #day is a datetime object
+    print(datetime.datetime.now())
+    for d in daterange(start.date(),stop.date()): #day is a datetime object
         myday = day(d)
-        records = readCanary(cnxn,myday.begin,myday.stop,None)
-        #write pg
-        if records != None:
-           write2Pg(pgcnxn,records)
-
+        #too much data if we pull an entire day all at once.
+        upHour = datetime.timedelta(hours=1)
+        starttime = myday.begin
+        while starttime < myday.end -upHour:
+            records = readCanary(cnxn,starttime,starttime + upHour,None)
+            #write pg
+            if records != None:
+                write2Pg(pgcnxn,records)
+            starttime = starttime + upHour
+    print(datetime.datetime.now())
     #cleanup
     cnxn.close()
     pgcnxn.close()
