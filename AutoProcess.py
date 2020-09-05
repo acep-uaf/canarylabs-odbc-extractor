@@ -1,10 +1,10 @@
 import datetime
 import os
 import process_historic_canary
-from process_historic_canary import ProcessingStoppedError
-from process_historic_canary import writeLast
 
-logPath = 'D:\RADIANCE\Canary_Labs_Data_Management\canarylabs-odbc-extractor'
+#from process_historic_canary import writeLast
+
+logPath = 'C:\\Users\\radiance-admin\Canary_Labs_Data_Management\canarylabs-odbc-extractor'
 logFile = 'ScheduledTasksLog.txt'
 log =os.path.join(logPath,logFile)
 
@@ -31,9 +31,9 @@ def main():
     try:
         result= process_historic_canary.main()
         logFiles(result['downloaded'],result['uploaded'],result['failedUploads'])
-    except ProcessingStoppedError as e:
-        writeLast(e.datetime)
-        writeToLog(e.message)
+    # except ProcessingStoppedError as e:
+    #     writeLast(e.datetime)
+    #     writeToLog(e.message)
     except Exception as e:
         print(e)
         writeToLog(str(e))

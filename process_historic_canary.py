@@ -137,6 +137,6 @@ def main():
     # for z in success:
     #     os.rmdir(z)
     # return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
-    Canary2Timescale(datetime.datetime.strptime('2020-01-01 00',"%Y-%m-%d %H"))
+    Canary2Timescale(datetime.datetime.strptime('2020-01-06 18',"%Y-%m-%d %H"))
 if __name__ == '__main__':
     main()

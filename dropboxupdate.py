@@ -11,7 +11,7 @@ import re
 from dropbox.exceptions import AuthError
 
 DROPBOX_URL = "https://www.dropbox.com/scl/fo/pjgnsgq98aw1xoan22imd/AAAXO5qNZT9NZN4h7ILsOSp7a/Histlog?dl=0"
-DATAFOLDER = "D:\\Historian Data"
+DATAFOLDER = "C:\\HistorianData"
 
 def ConfigObject(config_path):
     "read a configuration file to retrieve access token"

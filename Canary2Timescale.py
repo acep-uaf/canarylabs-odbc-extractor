@@ -156,7 +156,7 @@ def Canary2Timescale(minFileDateTime):
     for d in daterange(start.date(),stop.date()): #day is a datetime object
         myday = day(d)
         #too much data if we pull an entire day all at once.
-        upHour = datetime.timedelta(hours=1)
+        upHour = datetime.timedelta(hours=4)
         starttime = myday.begin
         while starttime < myday.end -upHour:
             records = readCanary(cnxn,starttime,starttime + upHour,None)
