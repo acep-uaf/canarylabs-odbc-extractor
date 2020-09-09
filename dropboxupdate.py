@@ -74,7 +74,8 @@ def processEntries(dbx,url,currentFiles, entries,newFiles = []):
 
 def parseYear(fileName):
     try:
-        return re.match("Cordova [0-9]{4}",fileName).group(0).replace(" ","")
+        place_year = re.match("Cordova [0-9]{4}",fileName).group(0).replace(" ","")
+        return place_year.replace("Cordova","") #stopped using place name when moved to server
     except AttributeError:
         return None
         
@@ -95,7 +96,7 @@ def download(dbx):
         processEntries(dbx, DROPBOX_URL, currentFiles, files.entries,newFiles)
     return newFiles
 def getFiles():
-    path = "C:\\Users\\tcmorgan2\\CanaryLabsDataManagement"  # ALTER as needed for accessing user config file
+    path = "instance"  # ALTER as needed for accessing user config file
     # path = os.path.dirname(__file__)
     config = ConfigObject(os.path.join(path, 'config.ini'))  # read config file with access token
     dbx = dropbox.Dropbox(config['access_token'])

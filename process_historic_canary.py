@@ -1,3 +1,5 @@
+import subprocess
+
 import pyodbc
 import csv
 import os
@@ -118,25 +120,43 @@ def getDateTime(filename):
     strhour = filename.split(" ")[2][0:2]
     return datetime.datetime(int(strday[0:4]),int(strday[4:6]), int(strday[6:8]), int(strhour))
 def fileDateTime(listOfFiles):
+    '''return the minimum start time contained within a file
+    file names contain the min timestamp included in the file, and a 24 hour period after that value'''
     return [getDateTime(d) for d in listOfFiles]
 #dstart = datetime.datetime.strptime('2019-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
 #dend = datetime.datetime.strptime('2020-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
 
 def readSpecialChannelNames():
-    return []
+    PrimaryChannels = []
+    with open(os.path.join("instance","SCADA channels of interestTDK.csv"), newline = '') as channels:
+        lines = csv.reader(channels, delimiter=',')
+        for row in lines:
+            PrimaryChannels.append(row[5]) #row is a tuple, position 5 contains tag name
+    return PrimaryChannels
+def restartHistorian():
+    os.chdir("bash")
+    # service will only restart if run as administator
+    subprocess.call("restart_historian.bat",shell=True)
+    os.chdir('..')
+    return
 def main():
-
-    # newFiles = dropboxupdate.getFiles() #test case removed Cordova 20200415 00 so one file should be processed
-    # Canary2Timescale(min(fileDateTime(newFiles)))
-    # writeChannels(min(fileDateTime(newFiles)),datetime.datetime.now(),BYCHANNEL,None)
-    # specialChannels = readSpecialChannelNames()
-    # writeChannels(min(fileDateTime(newFiles)),datetime.datetime.now(),KEYCHANNELS,specialChannels)
-    # zipByDays(BYCHANNEL)
-    # zipByDays(KEYCHANNELS)
-    # success, failed = uploadToBox.uploadZippedToBox(BYCHANNEL)
-    # for z in success:
-    #     os.rmdir(z)
-    # return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
-    Canary2Timescale(datetime.datetime.strptime('2020-01-06 18',"%Y-%m-%d %H"))
+    newFiles = dropboxupdate.getFiles() # get any new hdb files that have been posted
+    #restart historian service or new files won't be recognized
+    restartHistorian()
+    newFileDates = [fileDateTime(newFiles)][0]
+    newFileDates.sort() #the last file is often not a complete 24 hours
+    Canary2Timescale(newFileDates)
+    writeNewData(None,newFileDates, BYCHANNEL)
+    specialChannels = readSpecialChannelNames()
+    reWriteData(specialChannels,newFileDates,KEYCHANNELS)
+    zipByDays(BYCHANNEL)
+    zipByDays(KEYCHANNELS)
+    success, failed = uploadToBox.uploadZippedToBox(BYCHANNEL)
+    for z in success:
+        os.rmdir(z)
+    success2, failed2 = uploadToBox.uploadZippedToBox(KEYCHANNELS)
+    for z in success2:
+        os.rmdir(z)
+    return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
 if __name__ == '__main__':
     main()
