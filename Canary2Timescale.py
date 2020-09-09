@@ -85,49 +85,37 @@ def write2Pg(cnx,records):
     cursor.close()
     return
 def getAllTags(start,stop):
+    '''
+    :param: start datetime
+    :param: stop datetime
+    '''
     cnx = connect2Pg()
     cursor = cnx.cursor()
     tags = []
+    start = start.strftime(DATEFORMAT)
+    stop = stop.strftime(DATEFORMAT)
     try:
         cursor.execute(
                 "SELECT UNIQUE channel FROM data WHERE datetime BETWEEN " + start + " AND " + stop)
         tagtuples = cursor.fetchall()
-        tags = [t[0] for t in tagtuples]
+        tags = [".".join(t[0].split(".")[1:]) for t in tagtuples]
 
     finally:
         cursor.close()
         cnx.close()
     return tags
-def writeNewData(tags,filedays,datapath):
+def writeData(tags,filedays,datapath):
     cnx = connect2Pg()
     try:
         if tags is None:
-            tags = getAllTags()
+            tags = getAllTags(min(filedays),max(filedays))
         for t in tags:
-            for day in filedays:
-                d = day(day)
-                writeChannels(cnx,d.start.d.stop,datapath,tags)
+            for myday in filedays:
+                d = day(myday)
+                writeChannels(cnx,d.begin,d.end,os.path.join(datapath,str(myday.year)),tags)
     finally:
         cnx.close()
 
-
-def reWriteData(tags,filedays,mypath,):
-    '''exports channel records between start adn stop time to csv even if they have previously been exported.
-    A new export datetime gets assigned.'''
-    cnx = connect2Pg()
-    cursor = cnx.cursor()
-    try:
-        for t in tags:
-            for day in filedays:
-                d = day(day)
-                cursor.execute("UPDATE  data SET export_time = null WHere tag_name = %s AND datetime BETWEEN %s AND %s",(t,d.start,d.stop))
-        cnx.commit()
-
-    finally:
-        cursor.close()
-        cnx.close()
-
-    writeNewData(tags, filedays,mypath)
 
 
 def writeChannels(cnx,start, stop,mypath, tags):
@@ -138,15 +126,15 @@ def writeChannels(cnx,start, stop,mypath, tags):
     cursor = cnx.cursor()
     try:
         for t in tags:
-            records = cursor.execute(
-                "SELECT channel, description,datetime,value,quality FROM data LEFT JOIN channels on data.channel = channels.name WHERE channel = '" + t + "' AND datetime BETWEEN " + start + " AND " + stop + " AND export_datetime is null")
-
-            newcsvName = t[0].replace(".", "_") + (start.strftime(DATEFORMAT)).split(' ')[0] + ".csv"
+            cursor.execute(
+                "SELECT channel, description,datetime,value,quality FROM data LEFT JOIN channel on data.channel = channel.name WHERE channel LIKE %s AND datetime BETWEEN %s AND %s",
+                ('%.' + t, start, stop))
+            records = cursor.fetchall()
+            newcsvName = t.replace(".", "_") + (start.strftime(DATEFORMAT)).split(' ')[0] + ".csv"
             filepath = os.path.join(*[mypath, newcsvName])  # this is only the file prefix
             if len(records) > 0:
-                writeRecords(records, filepath)
-            cursor.execute("UPDATE data SET export_datetime WHERE channel = %s AND datetime BETWEEN %s AND %s",(t,start,stop))
-            cnx.commit()
+                process_historic_canary.writeRecords(records, filepath)
+
     finally:
         cursor.close()
 

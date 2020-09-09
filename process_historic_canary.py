@@ -7,12 +7,12 @@ import datetime
 from zipfile import ZipFile
 import dropboxupdate
 import uploadToBox
-from Canary2Timescale import Canary2Timescale, writeChannels
+from Canary2Timescale import Canary2Timescale, writeData
 
 '''script to read data out of canary labs historian and create a crosstab
 output as csv containing a single day of data for each parameters'''
 #CONSTANTS
-DATAFOLDER = 'C:\\HistorianData\\2020'
+DATAFOLDER = 'C:\\ProcessedCordovaData'
 DATEFORMAT = "%Y-%m-%d %H:%M:%S.%f"
 BYCHANNEL = os.path.join(DATAFOLDER,'ByChannel')
 KEYCHANNELS = os.path.join(DATAFOLDER,'KeyChannels')
@@ -23,7 +23,9 @@ def writeRecords(records,filepath):
     if len(records)>0:
         if not os.path.exists(filepath):
             header = ['tag_name','description','time_stamp','value','quality']
-        with open(filepath, mode='a',newline='') as Mycsv:
+        if not os.path.exists(os.path.dirname(filepath)):
+            os.mkdir(os.path.dirname(filepath))
+        with open(filepath, mode='a+',newline='') as Mycsv:
             csv_writer = csv.writer(Mycsv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             if len(header) > 0:
                 csv_writer.writerow(header)
@@ -61,7 +63,7 @@ def zipByMonth(myDirectory):
 years = [2018,2019,2020]
 months = list(range(1,13,1))
 days = list(range(1,32,1))
-def zipByDays(myDirectory):
+def zipByDays(myDirectory,prefix):
     files = os.listdir(myDirectory)
     os.chdir(myDirectory)
     def fillZip(f,zipObj):
@@ -76,7 +78,7 @@ def zipByDays(myDirectory):
                 if len(zipFiles) > 0:
                     alreadyZipped = os.listdir(myDirectory)
                     if ((matchString + ".zip") not in alreadyZipped):
-                        with ZipFile(matchString + ".zip", 'w') as zipObj:
+                        with ZipFile(prefix + matchString + ".zip", 'w') as zipObj:
                             [fillZip(f,zipObj) for f in zipFiles]
     return
 #The historian requires datetime filters
@@ -146,11 +148,16 @@ def main():
     newFileDates = [fileDateTime(newFiles)][0]
     newFileDates.sort() #the last file is often not a complete 24 hours
     Canary2Timescale(newFileDates)
-    writeNewData(None,newFileDates, BYCHANNEL)
+    # TODO uncomment write all new data
+    #writeData(None,newFileDates, BYCHANNEL)
     specialChannels = readSpecialChannelNames()
-    reWriteData(specialChannels,newFileDates,KEYCHANNELS)
-    zipByDays(BYCHANNEL)
-    zipByDays(KEYCHANNELS)
+    # TODO change ack to newFiledates
+    start = datetime.datetime(2020, 1, 1, 0)
+    end = datetime.datetime(2020, 7, 1, 0)
+    date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end - start).days)]
+    writeData(specialChannels,date_generated,KEYCHANNELS)
+    zipByDays(BYCHANNEL,"")
+    zipByDays(KEYCHANNELS,"PrimaryChannels")
     success, failed = uploadToBox.uploadZippedToBox(BYCHANNEL)
     for z in success:
         os.rmdir(z)
