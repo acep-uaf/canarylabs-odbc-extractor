@@ -98,22 +98,58 @@ def getAllTags(start,stop):
         cursor.close()
         cnx.close()
     return tags
-def writeChannels(start, stop,path, tags):
+def writeNewData(tags,filedays,datapath):
+    cnx = connect2Pg()
+    try:
+        if tags is None:
+            tags = getAllTags()
+        for t in tags:
+            for day in filedays:
+                d = day(day)
+                writeChannels(cnx,d.start.d.stop,datapath,tags)
+    finally:
+        cnx.close()
+
+
+def reWriteData(tags,filedays,mypath,):
+    '''exports channel records between start adn stop time to csv even if they have previously been exported.
+    A new export datetime gets assigned.'''
     cnx = connect2Pg()
     cursor = cnx.cursor()
-    if tags is None:
-        tags = getAllTags()
     try:
         for t in tags:
-            records = cursor.execute(
-                "SELECT channel, description,datetime,value,quality FROM data LEFT JOIN channels on data.channel = channels.name WHERE channel = '" + t + "' AND datetime BETWEEN " + start + " AND " + stop)
-            newcsvName = t[0].replace(".", "_") + (start.strftime(DATEFORMAT)).split(' ')[0] + ".csv"
-            filepath = os.path.join(*[path, newcsvName])  # this is only the file prefix
-            if len(records) > 0:
-                writeRecords(records, filepath)
+            for day in filedays:
+                d = day(day)
+                cursor.execute("UPDATE  data SET export_time = null WHere tag_name = %s AND datetime BETWEEN %s AND %s",(t,d.start,d.stop))
+        cnx.commit()
+
     finally:
         cursor.close()
         cnx.close()
+
+    writeNewData(tags, filedays,mypath)
+
+
+def writeChannels(cnx,start, stop,mypath, tags):
+    '''Write all records for the specified channel between start and stop datetime to csv file
+    csv files are named with the start datetime.
+    If a record was previously exported it will not be exported again'''
+
+    cursor = cnx.cursor()
+    try:
+        for t in tags:
+            records = cursor.execute(
+                "SELECT channel, description,datetime,value,quality FROM data LEFT JOIN channels on data.channel = channels.name WHERE channel = '" + t + "' AND datetime BETWEEN " + start + " AND " + stop + " AND export_datetime is null")
+
+            newcsvName = t[0].replace(".", "_") + (start.strftime(DATEFORMAT)).split(' ')[0] + ".csv"
+            filepath = os.path.join(*[mypath, newcsvName])  # this is only the file prefix
+            if len(records) > 0:
+                writeRecords(records, filepath)
+            cursor.execute("UPDATE data SET export_datetime WHERE channel = %s AND datetime BETWEEN %s AND %s",(t,start,stop))
+            cnx.commit()
+    finally:
+        cursor.close()
+
 def matchChannels(ccnx,pcnx):
     cursor = ccnx.cursor()
     tags = cursor.execute("SELECT tag_name,description FROM tags WHERE tag_name like '%.Cordova.%'").fetchall()
@@ -138,22 +174,25 @@ def updateChannels(tags,cnx):
     return
 
 
-def Canary2Timescale(minFileDateTime):
+def Canary2Timescale(days2Insert):
+    '''Queries records from canary labs historian connection and inserts those records in a postgresql database
+    The days to insert parameter provide the start time to query, records up to the end of the start day are inserted
+    :param days2Insert a list of datetimes to insert into the postgresql database'''
     #connect to canary
     cnxn = connect2Canary()
     #connect to pg
     pgcnxn = connect2Pg()
-    start = getLastInsert(pgcnxn) #start needs to be a datetime object
-    minFileDateTime = minFileDateTime.replace(tzinfo=pytz.timezone('US/Alaska'))
-    if ((start is None) or  (start[0] > minFileDateTime)):
-        start = minFileDateTime
-
-    stop = datetime.datetime.today()
-
+    # start = getLastInsert(pgcnxn) #start needs to be a datetime object
+    # minFileDateTime = minFileDateTime.replace(tzinfo=pytz.timezone('US/Alaska'))
+    # if ((start is None) or  (start[0] > minFileDateTime)):
+    #     #if a file was newly downloaded but from an earlier date than the current database state go back and re-upload based on the file date.
+    #     start = minFileDateTime
+    #
+    # stop = datetime.datetime.today()
     matchChannels(cnxn,pgcnxn)
     #read canary
     print(datetime.datetime.now())
-    for d in daterange(start.date(),stop.date()): #day is a datetime object
+    for d in days2Insert: #day is a datetime object
         myday = day(d)
         #too much data if we pull an entire day all at once.
         upHour = datetime.timedelta(hours=4)
@@ -161,7 +200,7 @@ def Canary2Timescale(minFileDateTime):
         while starttime < myday.end -upHour:
             records = readCanary(cnxn,starttime,starttime + upHour,None)
             #write pg
-            if records != None:
+            if len(records) > 0:
                 write2Pg(pgcnxn,records)
             starttime = starttime + upHour
     print(datetime.datetime.now())
