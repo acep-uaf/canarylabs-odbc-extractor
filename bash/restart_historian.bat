@@ -1,0 +1,1 @@
+powershell -command "Restart-Service 'Canary Labs Enterprise Historian' -Force"
