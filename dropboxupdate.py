@@ -1,18 +1,16 @@
-"""Syncrhonize D:HistorianData folder with dropbox.
+"""Syncrhonize HistorianData folder with dropbox.
 """
-
-import asyncio
-import urllib
 import dropbox
 import os
 import sys
 import re
+import datetime
 
 from dropbox.exceptions import AuthError
 
 DROPBOX_URL = "https://www.dropbox.com/scl/fo/pjgnsgq98aw1xoan22imd/AAAXO5qNZT9NZN4h7ILsOSp7a/Histlog?dl=0"
 DATAFOLDER = "C:\\HistorianData"
-
+PREFIX = 'cordova'
 def ConfigObject(config_path):
     "read a configuration file to retrieve access token"
     configDict = {}
@@ -53,7 +51,7 @@ def processEntries(dbx,url,currentFiles, entries,newFiles = []):
 
     try:
         for fm in entries:
-            if (fm.name not in currentFiles) and (fm.name.lower()[0:12] == 'cordova 2020'): # can add  'and (fm.name.lower()[0:12] == 'cordova 2020')' if targetting a specific subfolder
+            if (fm.name not in currentFiles) and (fm.name.lower()[0:12] == PREFIX + ' ' + str(datetime.datetime.today().year)): # can add  'and (fm.name.lower()[0:12] == 'cordova 2020')' if targetting a specific subfolder
                 dlink, response = dbx.sharing_get_shared_link_file(url, "/" + fm.name)
                 folder = parseYear(fm.name)
                 fname = fm.name
@@ -74,8 +72,8 @@ def processEntries(dbx,url,currentFiles, entries,newFiles = []):
 
 def parseYear(fileName):
     try:
-        place_year = re.match("Cordova [0-9]{4}",fileName).group(0).replace(" ","")
-        return place_year.replace("Cordova","") #stopped using place name when moved to server
+        place_year = re.match(PREFIX + ' ' + "[0-9]{4}",fileName.lower()).group(0).replace(" ","")
+        return place_year.lower().replace(PREFIX,"") #stopped using place name when moved to server
     except AttributeError:
         return None
         
@@ -113,9 +111,7 @@ def getFiles():
 def main():
     """download the contents of a given linked dropbox folder"""
 
-    
-    
-          
+
 
 if __name__ == '__main__':
     main()

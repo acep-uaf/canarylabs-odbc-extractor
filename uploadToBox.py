@@ -1,6 +1,5 @@
 from boxsdk import Client, OAuth2
-from boxsdk.network.default_network import DefaultNetwork
-from pprint import pformat
+
 import os
 import sys
 
@@ -14,18 +13,30 @@ def ConfigObject(config_path):
             except:
                 pass
     return configDict
+def uploadZippedToBox(zippedFolder, boxfolder = None):
+    if boxfolder is None:
+        boxfolder = accessUploadFolder()
+    try:
+        items = boxfolder.get_items()
+        for item in items:
+            if item.name == os.path.basename(zippedFolder):
+                return False
+        boxfolder.upload(zippedFolder)
+        uploaded = True
+    except Exception as e:
+        print(e)
+        uploaded = False
+        pass
+    finally:
+        return uploaded
 
-def uploadZippedToBox(zipFolder):
-    '''uploads new zip folders to box. Will not upload a zip folder if it already exists on Box even if the contents have changed'''
-    #files to upload
-    allFiles = os.listdir(zipFolder)
-    zipFiles = [f for f in allFiles if f[-3:] == 'zip']
+def accessUploadFolder(year=2020):
     # Define client ID, client secret, and developer token.
-    path = "C:\\Users\\tcmorgan2\\CanaryLabsDataManagement"
+    path = "instance"
     # Read app info from text file
     config = ConfigObject(os.path.join(path, 'Boxapp.cfg'))
     CLIENT_ID = config['client_id']
-    
+    CLIENT_FOLDER = config['client_folder' + str(year)]
     ACCESS_TOKEN = config['access_token']
 
     # Create OAuth2 object.
@@ -36,30 +47,43 @@ def uploadZippedToBox(zipFolder):
     # make sure we connected
     try:
         my = client.user(user_id='me').get()
-        print(my.name) #developer name tied to the token
-    except :
+        print(my.name)  # developer name tied to the token
+    except:
         sys.exit("ERROR: Invalid access token; try re-generating an "
                  "access token from the app console on the web.")
 
-    tfolder = client.folder('111885558694') #2020 scada data folder
-
+    tfolder = client.folder(CLIENT_FOLDER)  # 2020 scada data folder
+    return tfolder
+def listZipFiles(directory_folder):
+    '''
+    Lists teh zip folders in teh directory folder, including subdirectortories
+    '''
+    zipFiles = []
+    for root, dirs, files in os.walk(directory_folder):
+        for name in files:
+            if name[-3:] == 'zip':
+                zipFiles.append(os.path.join(root, name))
+    return zipFiles
+def uploadAllZippedToBox(zipFolder):
+    '''uploads new zip folders to box. Will not upload a zip folder if it already exists on Box even if the contents have changed'''
+    #files to upload
+    zipFiles = listZipFiles(zipFolder)
+    tfolder = accessUploadFolder()
     items = tfolder.get_items()
     for item in items:
         if item.name in zipFiles:
             zipFiles.remove(item.name)
     uploadedFiles = []
     badUploads = []
-    here = os.getcwd()
+
     for zipped in zipFiles:
-         os.chdir(zipFolder)
          try:
-             box_file = tfolder.upload(zipped)
-             uploadedFiles.append(zipped)
+             uploadZippedToBox(zipped, tfolder)
+             uploadedFiles.append((zipped,True))
          except Exception as e:
              print(e)
-             badUploads.append(zipped)
+             badUploads.append((zipped,False))
              pass
-         finally:
-             os.chdir(here)
+
     return uploadedFiles, badUploads
 

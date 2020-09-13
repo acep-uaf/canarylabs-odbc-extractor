@@ -7,7 +7,7 @@ import datetime
 from zipfile import ZipFile
 import dropboxupdate
 import uploadToBox
-from Canary2Timescale import Canary2Timescale, writeData
+from Canary2Timescale import Canary2Timescale, writeData, refreshViews
 
 '''script to read data out of canary labs historian and create a crosstab
 output as csv containing a single day of data for each parameters'''
@@ -18,7 +18,7 @@ BYCHANNEL = os.path.join(DATAFOLDER,'ByChannel')
 KEYCHANNELS = os.path.join(DATAFOLDER,'KeyChannels')
 
 def writeRecords(records,filepath):
-    '''write a csv file of raw table data extracted from the Historian data table'''
+    '''write a csv file of table data extracted from the Historian data table'''
     header = []
     if len(records)>0:
         if not os.path.exists(filepath):
@@ -49,9 +49,7 @@ def checkCreatePath(paths):
 def zipByMonth(myDirectory):
     files = os.listdir(myDirectory)
     os.chdir(myDirectory)
-    def fillZip(f,zipObj):
-        s = zipObj.write(f)
-        os.remove(f)
+
     for y in years:
         for m in months:
             matchString = str(y)+ "-" + '{:02d}'.format(m)
@@ -63,12 +61,16 @@ def zipByMonth(myDirectory):
 years = [2018,2019,2020]
 months = list(range(1,13,1))
 days = list(range(1,32,1))
+
+
+def fillZip(f, zipObj):
+    s = zipObj.write(f, os.path.basename(f))
+    os.remove(f)
+    return
 def zipByDays(myDirectory,prefix):
     files = os.listdir(myDirectory)
     os.chdir(myDirectory)
-    def fillZip(f,zipObj):
-        s = zipObj.write(f)
-        os.remove(f)
+
     for y in years:
         for m in months:
             for d in days:
@@ -81,20 +83,6 @@ def zipByDays(myDirectory,prefix):
                         with ZipFile(prefix + matchString + ".zip", 'w') as zipObj:
                             [fillZip(f,zipObj) for f in zipFiles]
     return
-#The historian requires datetime filters
-#for instance 'select * from data' returns only records from the most recent hour 
-#so we run through day by day
-    
-#The connnection
-
-# def writeLast(d):
-#     lastPath = "lastRecord.txt"
-#     try:
-#         with open(lastPath, 'w+') as lastfile:
-#             lastfile.write(datetime.datetime.strftime(d,"%Y-%m-%d %H:%M:%S.%f")) # The variable to store the last datetimestamp
-#
-#     except Exception as e:
-#         print(e)
 
 def makeSingleFile(directory, tag):
     files = os.listdir(directory)
@@ -102,10 +90,10 @@ def makeSingleFile(directory, tag):
     os.chdir(directory)
     for f in files:
         if tag.replace(".","_") in f:
-            
+
             with open(f,newline='') as infile:
                 csv_reader = csv.reader(infile,delimiter=',',quotechar='"')
-                mon =f[-9:-7]                   
+                mon =f[-9:-7]
                 with open(os.path.join("..",tag + mon + ".csv"), mode='a',newline='') as channelFile:
                     csv_writer = csv.writer(channelFile,delimiter=',',quotechar='"', quoting=csv.QUOTE_MINIMAL)
                     if (tag + mon) not in monthChannelList:
@@ -125,8 +113,6 @@ def fileDateTime(listOfFiles):
     '''return the minimum start time contained within a file
     file names contain the min timestamp included in the file, and a 24 hour period after that value'''
     return [getDateTime(d) for d in listOfFiles]
-#dstart = datetime.datetime.strptime('2019-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
-#dend = datetime.datetime.strptime('2020-01-01 00:00:00.100000',"%Y-%m-%d %H:%M:%S.%f")
 
 def readSpecialChannelNames():
     PrimaryChannels = []
@@ -141,29 +127,41 @@ def restartHistorian():
     subprocess.call("restart_historian.bat",shell=True)
     os.chdir('..')
     return
+def zipAndLoad(zipPath, folderDate,result):
+    '''
+    :param zipPath is the path to the folder contaiint data to zip
+    '''
+    if KEYCHANNELS in zipPath:
+        prefix = "PrimaryChannel"
+    else:
+        prefix = ""
+    zipFiles = [os.path.join(zipPath,f) for f in os.listdir(zipPath) if (f[-3:] =='csv') & (folderDate in f)]
+    if len(zipFiles) > 0:
+        alreadyZipped = [ f for f in os.listdir(zipPath) if f[-3:]=='zip']
+        if ((folderDate + ".zip") not in alreadyZipped):
+            with ZipFile(os.path.join(zipPath,prefix + folderDate + ".zip"), 'w') as zipObj:
+                [fillZip(f, zipObj) for f in zipFiles]
+    uploaded = uploadToBox.uploadZippedToBox(os.path.join(zipPath, prefix + folderDate + ".zip"))
+    if uploaded:
+        os.remove(os.path.join(zipPath, prefix + folderDate + ".zip"))
+    result.put(prefix + folderDate + ".zip", uploaded)
+    return
+
 def main():
     newFiles = dropboxupdate.getFiles() # get any new hdb files that have been posted
-    #restart historian service or new files won't be recognized
-    restartHistorian()
+    # restart historian service or new files won't be recognized
+    if len(newFiles)>0:
+        restartHistorian()
     newFileDates = [fileDateTime(newFiles)][0]
     newFileDates.sort() #the last file is often not a complete 24 hours
     Canary2Timescale(newFileDates)
-    # TODO uncomment write all new data
-    #writeData(None,newFileDates, BYCHANNEL)
+
+    success, failed = writeData(None,newFileDates, BYCHANNEL)
     specialChannels = readSpecialChannelNames()
-    # TODO change ack to newFiledates
-    start = datetime.datetime(2020, 1, 1, 0)
-    end = datetime.datetime(2020, 7, 1, 0)
-    date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end - start).days)]
-    writeData(specialChannels,date_generated,KEYCHANNELS)
-    zipByDays(BYCHANNEL,"")
-    zipByDays(KEYCHANNELS,"PrimaryChannels")
-    success, failed = uploadToBox.uploadZippedToBox(BYCHANNEL)
-    for z in success:
-        os.rmdir(z)
-    success2, failed2 = uploadToBox.uploadZippedToBox(KEYCHANNELS)
-    for z in success2:
-        os.rmdir(z)
+
+    success2, failed2 = writeData(specialChannels,newFiles,KEYCHANNELS)
+    # TODO finish mviews
+    # refreshViews(newFileDates)
     return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
 if __name__ == '__main__':
     main()
