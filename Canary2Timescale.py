@@ -17,12 +17,12 @@ class HistorianDay:
     def __init__(self,d):
         self.begin = datetime.datetime.combine(d, datetime.datetime.min.time())
         self.end = datetime.datetime.combine(d, datetime.datetime.max.time())
-        self.strday = '{:04d}'.format(d.year) + "-" + '{:02d}'.format(d.month) + "-" + '{:02d}'.format(d.HistorianDay)
+        self.strday = '{:04d}'.format(d.year) + "-" + '{:02d}'.format(d.month) + "-" + '{:02d}'.format(d.day)
 
 def readPGconfig():
     "read a configuration file to retrieve access token"
     configDict = {}
-    with open(os.path.join(*['instance','pgconfig.cfg']), 'r') as config:
+    with open(os.path.join(*[os.path.dirname(os.path.abspath(__file__)), 'instance','pgconfig.cfg']), 'r') as config:
         for line in config.readlines():
             try:
                 configDict[line.split("=")[0]] = line.split("=")[1].rstrip()
@@ -123,7 +123,7 @@ def writeData(tags,filedays,datapath):
             for myday in filedays:
                 d = HistorianDay(myday)
                 zipPath = os.path.join(datapath,str(myday.year))
-                writeChannels(cnx,d.begin,d.end,os.path.join(datapath,str(myday.year)),tags)
+                #writeChannels(cnx,d.begin,d.end,os.path.join(datapath,str(myday.year)),tags)
                 pool.apply_async(process_historic_canary.zipAndLoad, args=(zipPath,d.strday, result))
         finally:
             pool.close()
@@ -253,5 +253,5 @@ def makeMaterialFullYear(year=2020):
     days = [datetime.datetime(year, m, 1) for m in range(1,13)]
     refreshViews(days)
 
-if __name__ == '__main__':
-    makeMaterialFullYear(2020)
+# if __name__ == '__main__':
+#     makeMaterialFullYear(2020)

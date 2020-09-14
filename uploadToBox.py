@@ -20,7 +20,11 @@ def uploadZippedToBox(zippedFolder, boxfolder = None):
         items = boxfolder.get_items()
         for item in items:
             if item.name == os.path.basename(zippedFolder):
-                return False
+                try:
+                    item.delete()
+                except Exception as e:
+                    print(e)
+                    return False
         boxfolder.upload(zippedFolder)
         uploaded = True
     except Exception as e:
@@ -31,10 +35,10 @@ def uploadZippedToBox(zippedFolder, boxfolder = None):
         return uploaded
 
 def accessUploadFolder(year=2020):
-    # Define client ID, client secret, and developer token.
-    path = "instance"
+    # Define client ID, client secret, and developer token.path = os.path.join(*[os.path.dirname(os.path.abspath(__file__)),"instance"])
+
     # Read app info from text file
-    config = ConfigObject(os.path.join(path, 'Boxapp.cfg'))
+    config = ConfigObject(os.path.join(*[os.path.dirname(os.path.abspath(__file__)),"instance", 'Boxapp.cfg']))
     CLIENT_ID = config['client_id']
     CLIENT_FOLDER = config['client_folder' + str(year)]
     ACCESS_TOKEN = config['access_token']
@@ -72,7 +76,13 @@ def uploadAllZippedToBox(zipFolder):
     items = tfolder.get_items()
     for item in items:
         if item.name in zipFiles:
-            zipFiles.remove(item.name)
+            try:
+                item.delete()
+                #tfolder.file(file_id=item.id).delete()
+            except Exception as e:
+                print(e)
+                #If we coudn't delete the existing zip file don't try to upload a new one.
+                zipFiles.remove(item.name)
     uploadedFiles = []
     badUploads = []
 

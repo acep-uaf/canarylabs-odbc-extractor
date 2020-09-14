@@ -94,8 +94,8 @@ def download(dbx):
         processEntries(dbx, DROPBOX_URL, currentFiles, files.entries,newFiles)
     return newFiles
 def getFiles():
-    path = "instance"  # ALTER as needed for accessing user config file
-    # path = os.path.dirname(__file__)
+    path = os.path.join(*[os.path.dirname(os.path.abspath(__file__)), "instance"]) # ALTER as needed for accessing user config file
+
     config = ConfigObject(os.path.join(path, 'config.ini'))  # read config file with access token
     dbx = dropbox.Dropbox(config['access_token'])
     # make sure we connected

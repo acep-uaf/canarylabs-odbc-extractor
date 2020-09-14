@@ -2,8 +2,6 @@ import datetime
 import os
 import process_historic_canary
 
-#from process_historic_canary import writeLast
-
 logPath = 'C:\\Users\\radiance-admin\Canary_Labs_Data_Management\canarylabs-odbc-extractor'
 logFile = 'ScheduledTasksLog.txt'
 log =os.path.join(logPath,logFile)

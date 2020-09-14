@@ -1,1 +1,1 @@
-"D:\RADIANCE\Canary_Labs_Data_Management\venv1\Scripts\python.exe" "D:\RADIANCE\Canary_Labs_Data_Management\canarylabs-odbc-extractor\AutoProcess.py" pause
+"C:\Users\radiance-admin\AppData\Local\Programs\Python\Python38-32\python.exe" "C:\Users\radiance-admin\Canary_Labs_Data_Management\canarylabs-odbc-extractor\AutoProcess.py" pause

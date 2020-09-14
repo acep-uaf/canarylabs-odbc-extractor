@@ -116,7 +116,7 @@ def fileDateTime(listOfFiles):
 
 def readSpecialChannelNames():
     PrimaryChannels = []
-    with open(os.path.join("instance","SCADA channels of interestTDK.csv"), newline = '') as channels:
+    with open(os.path.join(*[os.path.dirname(os.path.abspath(__file__)),"instance","SCADA channels of interestTDK.csv"]), newline = '') as channels:
         lines = csv.reader(channels, delimiter=',')
         for row in lines:
             PrimaryChannels.append(row[5]) #row is a tuple, position 5 contains tag name
@@ -159,7 +159,7 @@ def main():
     success, failed = writeData(None,newFileDates, BYCHANNEL)
     specialChannels = readSpecialChannelNames()
 
-    success2, failed2 = writeData(specialChannels,newFiles,KEYCHANNELS)
+    success2, failed2 = writeData(specialChannels,newFileDates,KEYCHANNELS)
     # TODO finish mviews
     # refreshViews(newFileDates)
     return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
