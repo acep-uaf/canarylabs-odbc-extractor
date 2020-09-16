@@ -216,9 +216,9 @@ def Canary2Timescale(days2Insert):
     pgcnxn.close()
 def refreshAnomolyYM(ym,cnx):
     cursor = cnx.cursor()
-    sqlstr = "REFRESH MATERIALIZED VIEW anomoly" + ym
+
     try:
-        cursor.execute(sqlstr)
+        refreshMaterial(ym,cnx)
     except Exception as e:
         createAnomolyView(ym,cnx)
         print(e)
@@ -244,14 +244,12 @@ def refreshViews(daysWithNewData):
             print(e)
             pass
         except psycopg2.ProgrammingError as e:
-            print(e)
+
             #if the table did not exist create it:
             makeMaterial(ym,cnx)
     cnx.close()
 
 def makeMaterialFullYear(year=2020):
-    days = [datetime.datetime(year, m, 1) for m in range(1,13)]
+    days = [datetime.datetime(year, m, 1) for m in range(1,12)]
     refreshViews(days)
 
-# if __name__ == '__main__':
-#     makeMaterialFullYear(2020)

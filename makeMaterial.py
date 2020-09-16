@@ -20,6 +20,7 @@ def submitSQL(sqlstr,cnx):
         cnx.commit()
     except Exception as e:
         print(e)
+        print(sqlstr)
         cnx.rollback()
         raise
     finally:
@@ -30,6 +31,7 @@ def getViewName(ym):
 def getViewStart(ym):
     '''get the start datetime assocaited with a year-month combo
     :param ym is a string formatted as yyyy-mm'''
+    print(ym)
     start = datetime.date(int(ym[0:4]), int(ym[6:8]), 1)
     start = datetime.datetime.combine(start, datetime.datetime.min.time())
     return start

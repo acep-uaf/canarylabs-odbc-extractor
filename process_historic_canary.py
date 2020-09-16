@@ -4,6 +4,8 @@ import pyodbc
 import csv
 import os
 import datetime
+import sys
+import logging
 from zipfile import ZipFile
 import dropboxupdate
 import uploadToBox
@@ -16,6 +18,7 @@ DATAFOLDER = 'C:\\ProcessedCordovaData'
 DATEFORMAT = "%Y-%m-%d %H:%M:%S.%f"
 BYCHANNEL = os.path.join(DATAFOLDER,'ByChannel')
 KEYCHANNELS = os.path.join(DATAFOLDER,'KeyChannels')
+RAWDATA = "C:\\HistorianData"
 
 def writeRecords(records,filepath):
     '''write a csv file of table data extracted from the Historian data table'''
@@ -116,10 +119,10 @@ def fileDateTime(listOfFiles):
 
 def readSpecialChannelNames():
     PrimaryChannels = []
-    with open(os.path.join(*[os.path.dirname(os.path.abspath(__file__)),"instance","SCADA channels of interestTDK.csv"]), newline = '') as channels:
+    with open(os.path.join(*[os.path.dirname(os.path.abspath(__file__)),"instance","SCADA channels of interest consolidated.csv"]), newline = '') as channels:
         lines = csv.reader(channels, delimiter=',')
         for row in lines:
-            PrimaryChannels.append(row[5]) #row is a tuple, position 5 contains tag name
+            PrimaryChannels.append(row[0]) #single column csv file, so name is first value in tuple
     return PrimaryChannels
 def restartHistorian():
     os.chdir("bash")
@@ -146,22 +149,44 @@ def zipAndLoad(zipPath, folderDate,result):
         os.remove(os.path.join(zipPath, prefix + folderDate + ".zip"))
     result.put(prefix + folderDate + ".zip", uploaded)
     return
-
+def removeNewFiles(listOfFiles):
+   # TODO implement fileremoval
+    return
 def main():
-    newFiles = dropboxupdate.getFiles() # get any new hdb files that have been posted
-    # restart historian service or new files won't be recognized
-    if len(newFiles)>0:
-        restartHistorian()
-    newFileDates = [fileDateTime(newFiles)][0]
-    newFileDates.sort() #the last file is often not a complete 24 hours
-    Canary2Timescale(newFileDates)
+    logging.basicConfig(filename="ErrorLog.log",level="DEBUG")
+    newFiles = []
+    try:
+        newFiles = dropboxupdate.getFiles() # get any new hdb files that have been posted
+    except Exception:
+        logging.debug("Drop Box Download Error: ",exc_info=sys.exc_info())
+    finally:
+        # restart historian service or new files won't be recognized
+        if len(newFiles)>0:
+            try:
+                restartHistorian()
+            except Exception:
+                logging.debug("Historian not restarted: ", exc_info=sys.exc_info())
+                removeNewFiles(newFiles)
+                raise
 
-    success, failed = writeData(None,newFileDates, BYCHANNEL)
-    specialChannels = readSpecialChannelNames()
-
-    success2, failed2 = writeData(specialChannels,newFileDates,KEYCHANNELS)
-    # TODO finish mviews
-    # refreshViews(newFileDates)
-    return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
+        newFileDates = [fileDateTime(newFiles)][0]
+        newFileDates.sort() #the last file is often not a complete 24 hours
+        try:
+            Canary2Timescale(newFileDates)
+        except Exception:
+            logging.debug("PG connection error: ", exc_info=sys.exc_info())
+            raise
+        try:
+            success, failed = writeData(None,newFileDates, BYCHANNEL)
+        except Exception:
+            logging.debug("Error writing data: ", exc_info=sys.exc_info())
+        try:
+            specialChannels = readSpecialChannelNames()
+            success2, failed2 = writeData(specialChannels,newFileDates,KEYCHANNELS)
+        except Exception:
+            logging.debug("Error writing special channels: ", exc_info=sys.exc_info())
+        # TODO finish mviews
+        # refreshViews(newFileDates)
+        return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
 if __name__ == '__main__':
     main()
