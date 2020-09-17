@@ -248,8 +248,26 @@ def refreshViews(daysWithNewData):
             #if the table did not exist create it:
             makeMaterial(ym,cnx)
     cnx.close()
+def createMissingViews(daysWithNewData):
+    yearMonths = extractYearMonths(daysWithNewData)
+    cnx = connect2Pg()
+    cursor = cnx.cursor()
+    for ym in yearMonths:
+        try:
+            #try to refresh the view
+            cursor.execute("SELECT * FROM {0} LIMIT 1;",("anomoly_" + ym))
+        except psycopg2.OperationalError as e:
+            print(e)
+            pass
+        except psycopg2.ProgrammingError as e:
+
+            #if the table did not exist create it:
+            cnx.rollback()
+            makeMaterial(ym,cnx)
+    cursor.close()
+    cnx.close()
 
 def makeMaterialFullYear(year=2020):
     days = [datetime.datetime(year, m, 1) for m in range(1,12)]
-    refreshViews(days)
+    createMissingViews(days)
 

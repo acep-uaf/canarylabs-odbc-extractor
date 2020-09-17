@@ -50,19 +50,19 @@ def processEntries(dbx,url,currentFiles, entries,newFiles = []):
     os.chdir(DATAFOLDER)
 
     try:
-        for fm in entries:
-            if (fm.name not in currentFiles) and (fm.name.lower()[0:12] == PREFIX + ' ' + str(datetime.datetime.today().year)): # can add  'and (fm.name.lower()[0:12] == 'cordova 2020')' if targetting a specific subfolder
-                dlink, response = dbx.sharing_get_shared_link_file(url, "/" + fm.name)
-                folder = parseYear(fm.name)
-                fname = fm.name
-                if folder != None:
-                    if (not os.path.isdir(folder)):
-                        os.mkdir(folder)
-                    fname = os.path.join(folder,fm.name)
-                with open(fname, "wb") as f:
-                   print("adding: ",fm.name)
-                   newFiles.append(fm.name)
-                   f.write(response.content)
+        missing = [e for e in entries if (e.name in list(set([f.name for f in entries]) - set(currentFiles))) & (re.match(PREFIX + ' ' + str(datetime.datetime.today().year),e.name.lower()) != None)]
+        for fm in missing:
+            dlink, response = dbx.sharing_get_shared_link_file(url, "/" + fm.name)
+            folder = parseYear(fm.name)
+            fname = fm.name
+            if folder != None:
+                if (not os.path.isdir(folder)):
+                    os.mkdir(folder)
+                fname = os.path.join(folder,fm.name)
+            with open(fname, "wb") as f:
+               print("adding: ",fm.name)
+               newFiles.append(fm.name)
+               f.write(response.content)
     except Exception as e:
         print(e)
         pass

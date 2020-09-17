@@ -152,6 +152,36 @@ def zipAndLoad(zipPath, folderDate,result):
 def removeNewFiles(listOfFiles):
    # TODO implement fileremoval
     return
+def reprocess(fileList):
+    logging.basicConfig(filename="ErrorLog.log", level="DEBUG")
+    newFiles = fileList
+    if len(newFiles) > 0:  # only process new files
+        try:
+            restartHistorian()
+        except Exception:
+            logging.debug("Historian not restarted: ", exc_info=sys.exc_info())
+            removeNewFiles(newFiles)
+            raise
+
+        newFileDates = [fileDateTime(newFiles)][0]
+        newFileDates.sort()  # the last file is often not a complete 24 hours
+        try:
+            Canary2Timescale(newFileDates)
+        except Exception:
+            logging.debug("PG connection error: ", exc_info=sys.exc_info())
+            raise
+        success = []
+        failed = []
+        try:
+            success, failed = writeData(None, newFileDates, BYCHANNEL)
+            specialChannels = readSpecialChannelNames()
+            success2, failed2 = writeData(specialChannels, newFileDates, KEYCHANNELS)
+        except Exception:
+            logging.debug("Error writing data: ", exc_info=sys.exc_info())
+        # TODO finish mviews
+        # refreshViews(newFileDates)
+        return {'downloaded': len(newFiles), 'uploaded': len(success), 'failedUploads': len(failed)}
+    return {'downloaded': len(newFiles), 'uploaded': 0, 'failedUploads': 0}
 def main():
     logging.basicConfig(filename="ErrorLog.log",level="DEBUG")
     newFiles = []
@@ -161,7 +191,7 @@ def main():
         logging.debug("Drop Box Download Error: ",exc_info=sys.exc_info())
     finally:
         # restart historian service or new files won't be recognized
-        if len(newFiles)>0:
+        if len(newFiles)>0: #only process new files
             try:
                 restartHistorian()
             except Exception:
@@ -169,24 +199,24 @@ def main():
                 removeNewFiles(newFiles)
                 raise
 
-        newFileDates = [fileDateTime(newFiles)][0]
-        newFileDates.sort() #the last file is often not a complete 24 hours
-        try:
-            Canary2Timescale(newFileDates)
-        except Exception:
-            logging.debug("PG connection error: ", exc_info=sys.exc_info())
-            raise
-        try:
-            success, failed = writeData(None,newFileDates, BYCHANNEL)
-        except Exception:
-            logging.debug("Error writing data: ", exc_info=sys.exc_info())
-        try:
-            specialChannels = readSpecialChannelNames()
-            success2, failed2 = writeData(specialChannels,newFileDates,KEYCHANNELS)
-        except Exception:
-            logging.debug("Error writing special channels: ", exc_info=sys.exc_info())
-        # TODO finish mviews
-        # refreshViews(newFileDates)
-        return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
+            newFileDates = [fileDateTime(newFiles)][0]
+            newFileDates.sort() #the last file is often not a complete 24 hours
+            try:
+                Canary2Timescale(newFileDates)
+            except Exception:
+                logging.debug("PG connection error: ", exc_info=sys.exc_info())
+                raise
+            success = []
+            failed = []
+            try:
+                success, failed = writeData(None,newFileDates, BYCHANNEL)
+                specialChannels = readSpecialChannelNames()
+                success2, failed2 = writeData(specialChannels,newFileDates,KEYCHANNELS)
+            except Exception:
+                logging.debug("Error writing data: ", exc_info=sys.exc_info())
+            # TODO finish mviews
+            # refreshViews(newFileDates)
+            return {'downloaded':len(newFiles),'uploaded':len(success),'failedUploads':len(failed)}
+    return {'downloaded':len(newFiles), 'uploaded': 0, 'failedUploads': 0}
 if __name__ == '__main__':
     main()
