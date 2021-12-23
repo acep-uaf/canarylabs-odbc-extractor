@@ -1,3 +1,7 @@
+# LEGACY PROJECT
+
+Parts of this tool have been refactors into the [cec-datapipeline](https://github.com/acep-uaf/cec-datapipeline) [localHandling tools](https://github.com/acep-uaf/cec-datapipeline/tree/main/localHandling/historian)
+
 # canarylabs-odbc-extractor
 
 Running AutoProcess.main() or runProcessing.bat will pull new canary files from the specified dropbox into the data folder for Historian. 
